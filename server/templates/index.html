@@ -1,0 +1,71 @@
+{% extends "base.html" %} {% block content %}
+
+<h2>Enter Information</h2>
+
+<div>
+    <form id="upload-file" action="http://localhost:12000/predict" method="post" enctype="multipart/form-data">
+        <label for="">What is your name: </label>
+        <input type="text" name="name" value={{request.form.name}}> <br>
+        <label for="">What is your age: </label>
+        <input type="number" name="age" value={{request.form.age}}> <br>
+
+        <label for="">Gender: </label>
+        <select name="sex" id="sex" value={{request.form.sex}}>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select> <br>
+
+        <label for="">Type: </label>
+        <select name="dx_type" id="dx_type" value={{request.form.dx_type}}>
+            <option value="confocal">Confocal</option>
+            <option value="consensus">Consensus</option>
+            <option value="follow_up">Follow Up</option>
+            <option value="histo">Histo</option>
+        </select> <br>
+
+        <label for="">Localization:</label>
+        <select name="localization" id="localization" value={{request.form.localization}}>
+            <option value="abdomen">Abdomen</option>
+            <option value="acral">Acral</option>
+            <option value="back">Back</option>
+            <option value="chest">Chest</option>
+            <option value="ear">Ear</option>
+            <option value="face">Face</option>
+            <option value="foot">Foot</option>
+            <option value="genital">Genital</option>
+            <option value="hand">Hand</option>
+            <option value="lower extremity">Lower Extremity</option>
+            <option value="neck">Neck</option>
+            <option value="scalp">Scalp</option>
+            <option value="trunk">Trunk</option>
+            <option value="unknown">Unknown</option>
+            <option value="upper extremity">Upper Extremity</option>
+        </select> <br>
+        <input type="reset" class="upload-label"> <br> <br>
+
+        <h5>Upload an image to classify </h5>
+        <label for="imageUpload" class="upload-label">
+            Choose...
+        </label>
+        <input type="file" name="file" id="imageUpload" accept=".png, .jpg, .jpeg">
+    </form>
+
+    <div class="image-section" style="display:none;">
+        <div class="img-preview">
+            <div id="imagePreview">
+            </div>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary btn-lg" id="btn-predict">Predict!</button>
+        </div>
+    </div>
+
+    <div class="loader" style="display:none;"></div>
+
+    <h3 id="result">
+        <span> </span>
+    </h3>
+
+</div>
+
+{% endblock %}
