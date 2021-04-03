@@ -7,6 +7,7 @@ import sys
 import glob
 import pickle
 import numpy as np
+import pandas as pd
 from itertools import chain
 
 # Keras
@@ -21,23 +22,23 @@ from werkzeug.utils import secure_filename
 from gevent.pywsgi import WSGIServer
 
 # Defining the flask app
-app = Flask(__name__)
+app = Flask(__name__, static_folder = os.path.abspath('static/'))
 
 # Defining= the path for image and model
-UPLOAD_FOLDER = '/Users/sparshbohra/Desktop/skin-lesion/server/static'
+UPLOAD_FOLDER = './static/uploaded_images/'
 
 from keras.initializers import glorot_uniform
 
 #Reading the model from JSON file
-with open('/Users/sparshbohra/Desktop/skin-lesion/server/models/model_a.json', 'r') as json_file:
+with open('./models/model_a.json', 'r') as json_file:
     json_savedModel = json_file.read()
 
 #load the model architecture & weights
 feature_model = tf.keras.models.model_from_json(json_savedModel)
-feature_model.load_weights('/Users/sparshbohra/Desktop/skin-lesion/server/models/model_a_weights.h5')
+feature_model.load_weights('./models/model_a_weights.h5')
 
 # Load XGB model
-file_name = "/Users/sparshbohra/Desktop/skin-lesion/server/models/xgb_classifier.pkl"
+file_name = "./models/xgb_classifier.pkl"
 xgb_classifier = pickle.load(open(file_name, "rb"))
 
 def model_predict(sex, dx_type, localization, age, img_path, model):
@@ -127,23 +128,23 @@ def model_predict(sex, dx_type, localization, age, img_path, model):
 
     # Merging image and text data
     test_data = pd.concat([df, pd.DataFrame(predictions)], axis=1)
+    print(test_data)
 
     pred = xgb_classifier.predict(test_data)[0]
     return pred
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    # Main page
-    return render_template('index.html')
+    if request.method == "GET":
+        print("IN get")
+        return render_template("index.html")
 
-@app.route('/predict', methods=['GET', 'POST'])
-def upload():
     if request.method == 'POST':
         # Get the file and form data from post request
-        image_file = request.files['file']
-        var_age = request.form['age']
-        var_sex = request.form['sex']
-        var_dx_type = request.form['dx_type']
+        image_file = request.files['myfile']
+        var_age = int(request.form['age'])
+        var_sex = request.form['gender']
+        var_dx_type = request.form['type']
         var_localization = request.form['localization']
 
         # Save the file to ./uploads
@@ -153,7 +154,7 @@ def upload():
         image_file.save(image_location)
 
         # Make prediction
-        preds = model_predict(sex, dx_type, localization, age, image_location, model)
+        pred = model_predict(var_sex, var_dx_type, var_localization, var_age, image_location, xgb_classifier)
 
         # Map output to labels
         output_labels = ["Actinic Keratoses and Intraepithelial Carcinoma / Bowen's Disease (akiec)",
@@ -167,9 +168,9 @@ def upload():
         output_length = len(output_labels)
 
         # Process your result for human
-        result = output_labels[pred_class]
-        return result
+        result = output_labels[pred]
+        return render_template("result.html", disease = result, imagepath = image_location)
     return None
 
 if __name__ == '__main__':
-    app.run(port=12000, debug = True)
+    app.run(host = "0.0.0.0", debug = True, use_reloader=False)
