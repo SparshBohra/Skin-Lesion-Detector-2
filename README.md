@@ -6,4 +6,4 @@ Python (Flask) web app that uses an InceptionV3+XGBoost model to classify 7 diff
   -  Dermatofibroma (df)
   -  Melanocytic Nevi (nv)
   -  Vascular Lesions (angiomas, angiokeratomas, pyogenic granulomas and hemorrhage, vasc)
-  -  Melanoma (mel)
+  -  Melanoma (mel).
